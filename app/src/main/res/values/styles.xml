@@ -1,0 +1,100 @@
+<resources>
+	<!-- Base application theme. -->
+	<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+		<!-- Customize your theme here. -->
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorAccent">@color/colorAccent</item>
+	</style>
+	<style name="AppTheme.NoActionBar">
+		<item name="windowActionBar">false</item>
+		<item name="windowNoTitle">true</item>
+	</style>
+	<style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+	<style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!-- Базовый стиль текста -->
+
+	<!-- Базовый стиль текста -->
+	<style name="Text">
+		<item name="android:textColor">@color/defaultTextColor</item>
+		<item name="android:textColorHint">@color/defaultTextHintColor</item>
+	</style>
+	<!--<item name="android:includeFontPadding">false</item>-->
+
+	<!-- Шрифты -->
+	<style name="Text.Thin"><item name="android:fontFamily">sans-serif-thin</item><item name="android:textStyle">normal</item></style>
+	<style name="Text.Light"><item name="android:fontFamily">sans-serif-light</item><item name="android:textStyle">normal</item></style>
+	<style name="Text.Regular"><item name="android:fontFamily">sans-serif</item><item name="android:textStyle">normal</item></style>
+	<style name="Text.Medium"><item name="android:fontFamily">sans-serif</item><item name="android:textStyle">bold</item></style>
+	<style name="Text.Bold"><item name="android:fontFamily">sans-serif</item><item name="android:textStyle">bold</item></style>
+	<style name="Text.Black"><item name="android:fontFamily">sans-serif</item><item name="android:textStyle">bold</item></style>
+
+	<!-- Шрифты курсивом-->
+	<style name="Text.Thin.Italic"><item name="android:textStyle">italic</item></style>
+	<style name="Text.Light.Italic"><item name="android:textStyle">italic</item></style>
+	<style name="Text.Regular.Italic"><item name="android:textStyle">italic</item></style>
+	<style name="Text.Medium.Italic"><item name="android:textStyle">bold|italic</item></style>
+	<style name="Text.Bold.Italic"><item name="android:textStyle">bold|italic</item></style>
+	<style name="Text.Black.Italic"><item name="android:textStyle">bold|italic</item></style>
+
+	<!-- Цвет текста-->
+	<!-- Thin -->
+	<style name="Text.Thin.Black"><item name="android:textColor">@color/black</item></style>
+	<!-- Light -->
+	<style name="Text.Light.Black"><item name="android:textColor">@color/black</item></style>
+	<style name="Text.Light.White"><item name="android:textColor">@color/white</item></style>
+	<!-- Regular -->
+	<style name="Text.Regular.White"><item name="android:textColor">@color/white</item></style>
+	<style name="Text.Regular.Black"><item name="android:textColor">@color/black</item></style>
+	<!-- Medium -->
+	<style name="Text.Medium.White"><item name="android:textColor">@color/white</item></style>
+	<style name="Text.Medium.Black"><item name="android:textColor">@color/black</item></style>
+	<!-- Bold -->
+	<style name="Text.Bold.White"><item name="android:textColor">@color/white</item></style>
+	<style name="Text.Bold.Black"><item name="android:textColor">@color/black</item></style>
+	<!-- Black -->
+	<style name="Text.Black.White"><item name="android:textColor">@color/white</item></style>
+	<style name="Text.Black.Black"><item name="android:textColor">@color/black</item></style>
+
+	<!-- Размеры текста-->
+		<!-- Thin -->
+			<!-- Black-->
+	<style name="Text.Thin.Black.Size_24"><item name="android:textSize">@dimen/text_size_24</item></style>
+		<!-- Light -->
+			<!-- Black-->
+	<style name="Text.Light.Black.Size_24"><item name="android:textSize">@dimen/text_size_24</item></style>
+			<!-- White-->
+	<style name="Text.Light.White.Size_24"><item name="android:textSize">@dimen/text_size_24</item></style>
+
+		<!-- Regular -->
+			<!-- White-->
+	<style name="Text.Regular.White.Size_16"><item name="android:textSize">@dimen/text_size_16</item></style>
+			<!-- Black-->
+	<style name="Text.Regular.Black.Size_16"><item name="android:textSize">@dimen/text_size_16</item></style>
+	<style name="Text.Regular.Black.Size_18"><item name="android:textSize">@dimen/text_size_18</item></style>
+
+		<!-- Medium -->
+			<!-- White-->
+	<style name="Text.Medium.White.Size_16"><item name="android:textSize">@dimen/text_size_16</item></style>
+			<!-- Black-->
+	<style name="Text.Medium.Black.Size_16"><item name="android:textSize">@dimen/text_size_16</item></style>
+	<style name="Text.Medium.Black.Size_18"><item name="android:textSize">@dimen/text_size_18</item></style>
+
+		<!-- Bold -->
+			<!-- White-->
+	<style name="Text.Bold.White.Size_16"><item name="android:textSize">@dimen/text_size_16</item></style>
+			<!-- Black-->
+	<style name="Text.Bold.Black.Size_18"><item name="android:textSize">@dimen/text_size_18</item></style>
+
+
+		<!-- Black -->
+			<!-- White-->
+	<style name="Text.Black.White.Size_16"><item name="android:textSize">@dimen/text_size_16</item></style>
+			<!-- Black-->
+	<style name="Text.Black.Black.Size_18"><item name="android:textSize">@dimen/text_size_18</item></style>
+
+
+
+</resources>
