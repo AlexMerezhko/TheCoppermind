@@ -75,6 +75,9 @@ class PageActivity : AppCompatActivity() {
                     groupedParts = ArrayList()
                     blocks.add(Pair(textPart.text, groupedParts))
                 }
+                is PageTextTemplate -> {
+                    // TODO
+                }
                 else -> {
                     groupedParts.add(textPart)
                 }

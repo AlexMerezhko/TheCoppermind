@@ -6,9 +6,9 @@ package com.thecoppermind.utils
  */
 fun String.getIdForLink(): String {
     if (contains("|")) {
-        return substringBefore("|").replace(" ", "_")
+        return trim().substringBefore("|").replace(" ", "_")
     } else {
-        return replace(" ", "_")
+        return trim().replace(" ", "_")
     }
 }
 
