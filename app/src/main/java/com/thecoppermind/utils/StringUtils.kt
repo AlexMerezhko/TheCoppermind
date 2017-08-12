@@ -12,12 +12,10 @@ fun String.getIdForLink(): String {
     }
 }
 
-
 /**
  * Получаем текст для отображения ссылки на экране
  */
-fun String.getTextForLink(): String = substringAfterLast("|")
-
+//fun String.getTextForLink(): String = substringAfterLast("|")
 
 
 //if (rawLink.contains("|")) {
@@ -35,3 +33,10 @@ fun String.getTextForLink(): String = substringAfterLast("|")
 //        linkText = rawLink.substringAfterLast("|")
 //    }
 //}
+
+/**
+ * Преобразование символов перечислений в другой вид
+ */
+fun String.getTextWithEnumeration(): String {
+    return replace(Regex("[*#]"), " - ")
+}

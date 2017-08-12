@@ -27,19 +27,19 @@ class AllTypesOfContent {
 //                text(generateDataForAllTypes())
 //                match(generateParsedAllTypes())
                 var result = ""
-                result += generateDataForNormalText()
-                result += wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Heading)
-                result += wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Link)
-                result += wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Template)
-                result += wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Bold)
+                result += exampleNormalText()
+                result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Heading)
+                result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Link)
+                result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Template)
+                result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Bold)
 
                 text(result)
                 match(
-                        generateParsedNormalText(),
-                        generateParsedTextForContent(PageClassDeserializer.Companion.ContentType.Heading),
-                        generateParsedTextForContent(PageClassDeserializer.Companion.ContentType.Link),
-                        generateParsedTextForContent(PageClassDeserializer.Companion.ContentType.Template),
-                        generateParsedTextForContent(PageClassDeserializer.Companion.ContentType.Bold)
+                        exampleParsedNormalText(),
+                        exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Heading),
+                        exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Link),
+                        exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Template),
+                        exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Bold)
                 )
             }
         }
@@ -48,7 +48,7 @@ class AllTypesOfContent {
     @Test
     fun `all content without one`() {
         generator {
-            for (content in getAllTypesOfItems()) {
+            for (content in allTypesOfItems()) {
                 content {
                     text(generateDataForAllTypesExceptOne(content))
                     notContains(content)
@@ -61,7 +61,7 @@ class AllTypesOfContent {
     fun `empty bold`() {
         generator {
             content {
-                text(wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Bold, ""))
+                text(wrapWithContentTypeBorders(PageClassDeserializer.Companion.ContentType.Bold, ""))
                 matchResultEmpty()
             }
         }
@@ -71,8 +71,8 @@ class AllTypesOfContent {
     fun `one bold text`() {
         generator {
             content {
-                text(wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Bold))
-                match(PageTextBold(generateDataForContentType(PageClassDeserializer.Companion.ContentType.Bold)))
+                text(exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Bold))
+                match(PageTextBold(exampleForContentType(PageClassDeserializer.Companion.ContentType.Bold)))
             }
         }
     }

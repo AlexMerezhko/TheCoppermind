@@ -81,6 +81,7 @@
 			<!-- Black-->
 	<style name="Text.Medium.Black.Size_16"><item name="android:textSize">@dimen/text_size_16</item></style>
 	<style name="Text.Medium.Black.Size_18"><item name="android:textSize">@dimen/text_size_18</item></style>
+	<style name="Text.Medium.Black.Size_20"><item name="android:textSize">@dimen/text_size_20</item></style>
 
 		<!-- Bold -->
 			<!-- White-->
@@ -94,7 +95,5 @@
 	<style name="Text.Black.White.Size_16"><item name="android:textSize">@dimen/text_size_16</item></style>
 			<!-- Black-->
 	<style name="Text.Black.Black.Size_18"><item name="android:textSize">@dimen/text_size_18</item></style>
-
-
 
 </resources>

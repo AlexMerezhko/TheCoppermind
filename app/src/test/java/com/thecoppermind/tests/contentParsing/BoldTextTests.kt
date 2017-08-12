@@ -3,13 +3,28 @@
 package com.thecoppermind.tests.contentParsing
 
 import com.thecoppermind.Robots.content
-import com.thecoppermind.page.PageClassDeserializer
 import com.thecoppermind.page.PageTextBold
 import com.thecoppermind.Robots.generator
+import com.thecoppermind.page.PageClassDeserializer.Companion.ContentType.Bold
+import org.junit.Assert
 import org.junit.Test
 
 
 class BoldTextTests {
+
+    @Test
+    fun `check generated data`() {
+        generator {
+            val boldText = exampleForContentType(Bold)
+            Assert.assertTrue("'''$boldText'''" == exampleForContentTypeWithBorders(Bold))
+            Assert.assertTrue(PageTextBold(boldText) == exampleForParsedContentType(Bold))
+
+            content {
+                text(exampleForContentTypeWithBorders(Bold))
+                match(exampleForParsedContentType(Bold))
+            }
+        }
+    }
 
     @Test
     fun `no bold`() {
@@ -25,7 +40,7 @@ class BoldTextTests {
     fun `empty bold`() {
         generator {
             content {
-                text(wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Bold, ""))
+                text(wrapWithContentTypeBorders(Bold, ""))
                 matchResultEmpty()
             }
         }
@@ -35,8 +50,18 @@ class BoldTextTests {
     fun `one bold text`() {
         generator {
             content {
-                text(wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Bold))
-                match(PageTextBold(generateDataForContentType(PageClassDeserializer.Companion.ContentType.Bold)))
+                text(exampleForContentTypeWithBorders(Bold))
+                match(PageTextBold(exampleForContentType(Bold)))
+            }
+        }
+    }
+
+    @Test
+    fun `two bold text in a row`() {
+        generator {
+            content {
+                text(exampleForContentTypeWithBorders(Bold) + exampleForContentTypeWithBorders(Bold))
+                match(exampleForParsedContentType(Bold), exampleForParsedContentType(Bold))
             }
         }
     }

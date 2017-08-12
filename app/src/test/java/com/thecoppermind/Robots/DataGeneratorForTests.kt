@@ -9,36 +9,44 @@ class DataGeneratorForTests {
 
     // ----- все типы текстовох блоково------
 
-    fun getAllTypesOfItems() = listOf(PageTextNormal::class, PageTextBold::class, PageTextHeading::class, PageTextTemplate::class, PageTextHeading::class)
+    fun allTypesOfItems() = listOf(PageTextNormal::class, PageTextBold::class, PageTextHeading::class, PageTextTemplate::class, PageTextHeading::class)
 
     // ----- основной формат ответа ------
 
-    fun generateJsonResponse(id: Int, title: String, text: String) = "{\"parse\":{\"title\":\"$title\",\"pageid\":$id,\"wikitext\":{\"*\":\"$text\"}}}"
+    fun jsonResponse(id: Int, title: String, text: String) = "{\"parse\":{\"title\":\"$title\",\"pageid\":$id,\"wikitext\":{\"*\":\"$text\"}}}"
 
     // ----- создание текстовых элементов - частей необработанных данных ------
 
-    fun generateDataForNormalText() = "This is normal text"
-    fun generateDataForContentType(type: PageClassDeserializer.Companion.ContentType): String {
+    fun exampleNormalText() = "This is normal text"
+    fun exampleForContentType(type: PageClassDeserializer.Companion.ContentType): String {
         return "This is ${type.name} text"
     }
 
-    fun generateDataForAllTypes(): String {
-        return generateDataForAllTypesExceptOne(null)
-    }
+//    fun generateDataForAllTypes(): String {
+//        return generateDataForAllTypesExceptOne(null)
+//    }
 
     fun generateDataForAllTypesExceptOne(clazz: KClass<out PageTextInterface>?): String {
         var result = ""
 
-        if (clazz != PageTextNormal::class) result += generateDataForNormalText()
-        if (clazz != PageTextHeading::class) result += wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Heading)
-        if (clazz != PageTextLink::class) result += wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Link)
-        if (clazz != PageTextTemplate::class) result += wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Template)
-        if (clazz != PageTextBold::class) result += wrapDataForContentType(PageClassDeserializer.Companion.ContentType.Bold)
+        if (clazz != PageTextNormal::class) result += exampleNormalText()
+        if (clazz != PageTextHeading::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Heading)
+        if (clazz != PageTextLink::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Link)
+        if (clazz != PageTextTemplate::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Template)
+        if (clazz != PageTextBold::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Bold)
 
         return result
     }
 
-    fun wrapDataForContentType(type: PageClassDeserializer.Companion.ContentType, baseText: String = generateDataForContentType(type)): String {
+    fun exampleForContentTypeWithBorders(type: PageClassDeserializer.Companion.ContentType): String {
+        return wrapWithContentTypeBorders(type)
+    }
+
+//    fun exampleLinkWithScroll(): String {
+//        return "[[Real page id#Heading to scroll|link to show]]"
+//    }
+
+    fun wrapWithContentTypeBorders(type: PageClassDeserializer.Companion.ContentType, baseText: String = exampleForContentType(type)): String {
         var text: String = ""
         for (i in 0 until type.charsCountInRow) text += type.startChar
         text += baseText
@@ -48,26 +56,26 @@ class DataGeneratorForTests {
 
     // ----- создание текстовых элементов - обработанных данных ------
 
-    fun generateParsedNormalText() = PageTextNormal(generateDataForNormalText())
-    fun generateParsedTextForContent(type: PageClassDeserializer.Companion.ContentType): PageTextInterface {
+    fun exampleParsedNormalText() = PageTextNormal(exampleNormalText())
+    fun exampleForParsedContentType(type: PageClassDeserializer.Companion.ContentType): PageTextInterface {
         when (type) {
-            PageClassDeserializer.Companion.ContentType.Bold -> return PageTextBold(generateDataForContentType(type))
+            PageClassDeserializer.Companion.ContentType.Bold -> return PageTextBold(exampleForContentType(type))
             PageClassDeserializer.Companion.ContentType.Link -> {
-                val text = generateDataForContentType(type)
+                val text = exampleForContentType(type)
                 return PageTextLink(text, text.getIdForLink())
             }
-            PageClassDeserializer.Companion.ContentType.Template -> return PageTextTemplate(generateDataForContentType(type))
-            PageClassDeserializer.Companion.ContentType.Heading -> return PageTextHeading(generateDataForContentType(type))
+            PageClassDeserializer.Companion.ContentType.Template -> return PageTextTemplate(exampleForContentType(type))
+            PageClassDeserializer.Companion.ContentType.Heading -> return PageTextHeading(exampleForContentType(type))
         }
     }
 
-    fun generateParsedAllTypes(): Array<out PageTextInterface> {
-        return arrayOf(
-                generateParsedNormalText(),
-                generateParsedTextForContent(PageClassDeserializer.Companion.ContentType.Bold),
-                generateParsedTextForContent(PageClassDeserializer.Companion.ContentType.Link),
-                generateParsedTextForContent(PageClassDeserializer.Companion.ContentType.Template),
-                generateParsedTextForContent(PageClassDeserializer.Companion.ContentType.Heading)
-        )
-    }
+//    fun generateParsedAllTypes(): Array<out PageTextInterface> {
+//        return arrayOf(
+//                exampleParsedNormalText(),
+//                exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Bold),
+//                exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Link),
+//                exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Template),
+//                exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Heading)
+//        )
+//    }
 }

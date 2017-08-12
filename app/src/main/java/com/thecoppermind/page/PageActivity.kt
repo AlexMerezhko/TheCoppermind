@@ -12,7 +12,7 @@ import com.thecoppermind.recyclerView.refactor.RecyclerHolder
 import com.thecoppermind.recyclerView.refactor.RecyclerItemViewInterface
 import kotlinx.android.synthetic.main.page_ac.*
 import kotlinx.android.synthetic.main.page_ac_content.*
-import org.jetbrains.anko.startActivity
+import org.jetbrains.anko.intentFor
 import org.jetbrains.anko.toast
 import retrofit2.Call
 import retrofit2.Callback
@@ -32,20 +32,20 @@ class PageActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         val linkClickListener = object : OnTextItemClickListener {
-            override fun onLinkClick(link: String) {
+            override fun onLinkClick(link: PageTextLink) {
                 startPage(link)
             }
         }
         page_ac_recycler_view.adapter = object : RecyclerAdapter() {
             override fun getViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
                 return when (viewType) {
-                    PageHeadingListItem.viewType -> PageHeadingView(parent)
+                    PageHeadingListItem.viewType -> PageHeadingView(parent, linkClickListener)
                     PageTextListItem.viewType -> PageTextView(parent, linkClickListener)
                     else -> super.getViewHolder(parent, viewType)
                 }
             }
         }
-        page_ac_recycler_view.layoutManager =  LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        page_ac_recycler_view.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
 
         updatePageTitle(getString(R.string.title_default_before_loading_complete))
         requestPageInfo(intent.extras.getString(extras_key_page_id))
@@ -64,16 +64,19 @@ class PageActivity : AppCompatActivity() {
     }
 
     fun updatePageContent(parts: ArrayList<PageTextInterface>) {
+        val headingToScroll = intent.extras.getString(extras_key_scroll_to_heading, "")
         val views: ArrayList<RecyclerItemViewInterface> = ArrayList()
-        val blocks: ArrayList<Pair<String, ArrayList<PageTextInterface>>> = ArrayList()
+        val blocks: ArrayList<Pair<PageTextHeading?, ArrayList<PageTextInterface>>> = ArrayList()
+
+        var positionToScroll = 0
 
         var groupedParts: ArrayList<PageTextInterface> = ArrayList()
-        blocks.add(Pair("", groupedParts))
+        blocks.add(Pair(null, groupedParts))
         for (textPart in parts) {
             when (textPart) {
                 is PageTextHeading -> {
                     groupedParts = ArrayList()
-                    blocks.add(Pair(textPart.text, groupedParts))
+                    blocks.add(Pair(textPart, groupedParts))
                 }
                 is PageTextTemplate -> {
                     // TODO
@@ -85,14 +88,22 @@ class PageActivity : AppCompatActivity() {
         }
 
         for ((index, headerAndTextParts) in blocks.withIndex()) {
-            if (headerAndTextParts.first.isNotEmpty()) {
-                views.add(PageHeadingListItem(index, headerAndTextParts.first))
+
+            val heading = headerAndTextParts.first
+            heading?.let {
+                if (headingToScroll.isNotEmpty() && headingToScroll == heading.text) {
+                    views.add(PageHeadingListItem(index, heading, true))
+                    positionToScroll = views.size - 1
+                } else {
+                    views.add(PageHeadingListItem(index, heading))
+                }
             }
             if (!headerAndTextParts.second.none()) {
                 views.add(PageTextListItem(index, headerAndTextParts.second))
             }
         }
         RecyclerHelper.updateDataInUniversalRecyclerView(page_ac_recycler_view, views)
+        page_ac_recycler_view.scrollToPosition(positionToScroll)
     }
 
 
@@ -115,17 +126,11 @@ class PageActivity : AppCompatActivity() {
 
     // ----- Переходы на другие экраны  -----
 
-    fun startPage(link: String) {
-        val pageId: String
-        val headingToScroll: String
-        if (link.contains("#")) {
-            pageId = link.substringBeforeLast("#")
-            headingToScroll = link.substringAfterLast("#")
-        } else {
-            pageId = link
-            headingToScroll = ""
+    fun startPage(link: PageTextLink) {
+        val intent = intentFor<PageActivity>(Pair(PageActivity.extras_key_page_id, link.pageId))
+        if (link.heading.isNotEmpty()) {
+            intent.putExtra(PageActivity.extras_key_scroll_to_heading, link.heading)
         }
-        startActivity<PageActivity>(Pair(PageActivity.extras_key_page_id, pageId))
+        startActivity(intent)
     }
-
 }

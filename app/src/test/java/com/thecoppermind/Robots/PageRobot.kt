@@ -19,7 +19,7 @@ class PageRobot {
     fun fromGeneratedResponse(id: Int, title: String, text: String) {
         this.id = id
         this.title = title
-        fromResponse(DataGeneratorForTests().generateJsonResponse(id, title, text)) // TODO
+        fromResponse(DataGeneratorForTests().jsonResponse(id, title, text)) // TODO
     }
 
     fun fromResponse(response: String) {
