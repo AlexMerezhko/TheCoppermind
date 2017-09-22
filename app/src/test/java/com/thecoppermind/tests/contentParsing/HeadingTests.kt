@@ -65,7 +65,7 @@ class HeadingTests {
             }
             content {
                 text("$borders$baseText$borders")
-                match(PageTextHeading(text = baseText, level = HeadingLevel.getLevelTypeFromBorderCharsCount(bordersCount)))
+                match(PageTextHeading(text = baseText, level = HeadingLevel.getLevelFromBorderCharsCount(bordersCount)))
             }
         }
     }
@@ -74,7 +74,7 @@ class HeadingTests {
     fun `get heading level from borders count`() {
         for (bordersCount in HeadingLevel.values()[0].countOfBorderChars..HeadingLevel.values()[HeadingLevel.values().size - 1].countOfBorderChars) {
             assertEquals(
-                    HeadingLevel.getLevelTypeFromBorderCharsCount(bordersCount),
+                    HeadingLevel.getLevelFromBorderCharsCount(bordersCount),
                     when (bordersCount) {
                         2 -> HeadingLevel.h2
                         3 -> HeadingLevel.h3

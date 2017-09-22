@@ -46,7 +46,7 @@ interface PageTextViewInterface {
             when (textPart) {
                 is PageTextNormal -> builder.append(textPart.text)
                 is PageTextLink -> builder.append(addTextWithLink(textPart, listener))
-                is PageTextBold -> builder.append(addBoldText(textPart.text))
+                is PageTextBoldItalic -> builder.append(addBoldItalic(textPart.text, textPart.type))
             }
         }
 
@@ -55,10 +55,17 @@ interface PageTextViewInterface {
     }
 
 
-    fun addBoldText(boldText: String): CharSequence {
-        val boldSpan: StyleSpan = StyleSpan(Typeface.BOLD)
-        val strBuilder: SpannableStringBuilder = SpannableStringBuilder(boldText)
-        strBuilder.setSpan(boldSpan, 0, strBuilder.length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
+    fun addBoldItalic(text: String, type: BoldItalicType): CharSequence {
+        val span : StyleSpan
+        when (type){
+            BoldItalicType.bold -> span = StyleSpan(Typeface.BOLD)
+            BoldItalicType.italic -> span = StyleSpan(Typeface.ITALIC)
+            BoldItalicType.boldItalic -> span = StyleSpan(Typeface.BOLD_ITALIC)
+        }
+
+//        val boldSpan: StyleSpan = StyleSpan(Typeface.BOLD)
+        val strBuilder: SpannableStringBuilder = SpannableStringBuilder(text)
+        strBuilder.setSpan(span, 0, strBuilder.length, Spanned.SPAN_INCLUSIVE_EXCLUSIVE)
         return strBuilder
     }
 

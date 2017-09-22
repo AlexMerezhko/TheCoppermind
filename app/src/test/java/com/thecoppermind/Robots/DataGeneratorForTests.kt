@@ -9,7 +9,7 @@ class DataGeneratorForTests {
 
     // ----- все типы текстовох блоково------
 
-    fun allTypesOfItems() = listOf(PageTextNormal::class, PageTextBold::class, PageTextHeading::class, PageTextTemplate::class, PageTextHeading::class)
+    fun allTypesOfItems() = listOf(PageTextNormal::class, PageTextBoldItalic::class, PageTextHeading::class, PageTextTemplate::class, PageTextHeading::class)
 
     // ----- основной формат ответа ------
 
@@ -33,7 +33,7 @@ class DataGeneratorForTests {
         if (clazz != PageTextHeading::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Heading)
         if (clazz != PageTextLink::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Link)
         if (clazz != PageTextTemplate::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Template)
-        if (clazz != PageTextBold::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Bold)
+        if (clazz != PageTextBoldItalic::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.BoldItalic)
 
         return result
     }
@@ -59,7 +59,7 @@ class DataGeneratorForTests {
     fun exampleParsedNormalText() = PageTextNormal(exampleNormalText())
     fun exampleForParsedContentType(type: PageClassDeserializer.Companion.ContentType): PageTextInterface {
         when (type) {
-            PageClassDeserializer.Companion.ContentType.Bold -> return PageTextBold(exampleForContentType(type))
+            PageClassDeserializer.Companion.ContentType.BoldItalic -> return PageTextBoldItalic(exampleForContentType(type))
             PageClassDeserializer.Companion.ContentType.Link -> {
                 val text = exampleForContentType(type)
                 return PageTextLink(text, text.getIdForLink())

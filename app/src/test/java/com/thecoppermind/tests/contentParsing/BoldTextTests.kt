@@ -3,9 +3,9 @@
 package com.thecoppermind.tests.contentParsing
 
 import com.thecoppermind.Robots.content
-import com.thecoppermind.page.PageTextBold
+import com.thecoppermind.page.PageTextBoldItalic
 import com.thecoppermind.Robots.generator
-import com.thecoppermind.page.PageClassDeserializer.Companion.ContentType.Bold
+import com.thecoppermind.page.PageClassDeserializer.Companion.ContentType.BoldItalic
 import org.junit.Assert
 import org.junit.Test
 
@@ -15,13 +15,13 @@ class BoldTextTests {
     @Test
     fun `check generated data`() {
         generator {
-            val boldText = exampleForContentType(Bold)
-            Assert.assertTrue("'''$boldText'''" == exampleForContentTypeWithBorders(Bold))
-            Assert.assertTrue(PageTextBold(boldText) == exampleForParsedContentType(Bold))
+            val boldText = exampleForContentType(BoldItalic)
+            Assert.assertTrue("'''$boldText'''" == exampleForContentTypeWithBorders(BoldItalic))
+            Assert.assertTrue(PageTextBoldItalic(boldText) == exampleForParsedContentType(BoldItalic))
 
             content {
-                text(exampleForContentTypeWithBorders(Bold))
-                match(exampleForParsedContentType(Bold))
+                text(exampleForContentTypeWithBorders(BoldItalic))
+                match(exampleForParsedContentType(BoldItalic))
             }
         }
     }
@@ -30,8 +30,8 @@ class BoldTextTests {
     fun `no bold`() {
         generator {
             content {
-                text(generateDataForAllTypesExceptOne(PageTextBold::class))
-                notContains<PageTextBold>()
+                text(generateDataForAllTypesExceptOne(PageTextBoldItalic::class))
+                notContains<PageTextBoldItalic>()
             }
         }
     }
@@ -40,7 +40,7 @@ class BoldTextTests {
     fun `empty bold`() {
         generator {
             content {
-                text(wrapWithContentTypeBorders(Bold, ""))
+                text(wrapWithContentTypeBorders(BoldItalic, ""))
                 matchResultEmpty()
             }
         }
@@ -50,8 +50,8 @@ class BoldTextTests {
     fun `one bold text`() {
         generator {
             content {
-                text(exampleForContentTypeWithBorders(Bold))
-                match(PageTextBold(exampleForContentType(Bold)))
+                text(exampleForContentTypeWithBorders(BoldItalic))
+                match(PageTextBoldItalic(exampleForContentType(BoldItalic)))
             }
         }
     }
@@ -60,8 +60,8 @@ class BoldTextTests {
     fun `two bold text in a row`() {
         generator {
             content {
-                text(exampleForContentTypeWithBorders(Bold) + exampleForContentTypeWithBorders(Bold))
-                match(exampleForParsedContentType(Bold), exampleForParsedContentType(Bold))
+                text(exampleForContentTypeWithBorders(BoldItalic) + exampleForContentTypeWithBorders(BoldItalic))
+                match(exampleForParsedContentType(BoldItalic), exampleForParsedContentType(BoldItalic))
             }
         }
     }

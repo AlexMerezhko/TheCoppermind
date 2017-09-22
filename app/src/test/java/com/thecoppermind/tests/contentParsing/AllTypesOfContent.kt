@@ -31,7 +31,7 @@ class AllTypesOfContent {
                 result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Heading)
                 result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Link)
                 result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Template)
-                result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Bold)
+                result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.BoldItalic)
 
                 text(result)
                 match(
@@ -39,7 +39,7 @@ class AllTypesOfContent {
                         exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Heading),
                         exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Link),
                         exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Template),
-                        exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.Bold)
+                        exampleForParsedContentType(PageClassDeserializer.Companion.ContentType.BoldItalic)
                 )
             }
         }
@@ -61,7 +61,7 @@ class AllTypesOfContent {
     fun `empty bold`() {
         generator {
             content {
-                text(wrapWithContentTypeBorders(PageClassDeserializer.Companion.ContentType.Bold, ""))
+                text(wrapWithContentTypeBorders(PageClassDeserializer.Companion.ContentType.BoldItalic, ""))
                 matchResultEmpty()
             }
         }
@@ -71,8 +71,8 @@ class AllTypesOfContent {
     fun `one bold text`() {
         generator {
             content {
-                text(exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Bold))
-                match(PageTextBold(exampleForContentType(PageClassDeserializer.Companion.ContentType.Bold)))
+                text(exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.BoldItalic))
+                match(PageTextBoldItalic(exampleForContentType(PageClassDeserializer.Companion.ContentType.BoldItalic)))
             }
         }
     }

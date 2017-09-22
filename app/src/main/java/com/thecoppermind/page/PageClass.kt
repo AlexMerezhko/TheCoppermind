@@ -22,10 +22,10 @@ data class PageTextNormal(override val text: String) : PageTextInterface
 // known templates
 // TODO https://en.wikipedia.org/wiki/Template:Fake_heading
 
-
+// TODO тесты для boldItalic
 data class PageTextHeading(override val text: String, val parts: List<PageTextInterface> = ArrayList(), val level: HeadingLevel = HeadingLevel.h2) : PageTextInterface
 
-data class PageTextBold(override val text: String) : PageTextInterface
+data class PageTextBoldItalic(override val text: String, val type : BoldItalicType) : PageTextInterface
 data class PageTextLink(override val text: String, val pageId: String, val heading: String = "") : PageTextInterface
 data class PageTextTemplate(override val text: String) : PageTextInterface
 
@@ -41,7 +41,18 @@ enum class HeadingLevel(val countOfBorderChars: Int) {
     h6(6); // ====== heading h6 ======
 
     companion object {
-        fun getLevelTypeFromBorderCharsCount(count: Int) = HeadingLevel.values().firstOrNull { it.countOfBorderChars == count } ?: HeadingLevel.h6
+        fun getLevelFromBorderCharsCount(count: Int) = HeadingLevel.values().firstOrNull { it.countOfBorderChars == count } ?: HeadingLevel.h6
+    }
+}
+
+enum class BoldItalicType(val countOfBorderChars: Int) {
+
+    italic(2), // ''italic''
+    bold(3), // '''bold'''
+    boldItalic(5); // '''''bold italics'''''
+
+    companion object {
+        fun getTypeFromBorderCharsCount(count: Int) = BoldItalicType.values().first { it.countOfBorderChars == count }
     }
 }
 
@@ -74,7 +85,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
     // ----- Типы разделителей, по которым отличаем обычный текст от спец/сиволов и/или блоков -----
     companion object {
         enum class ContentType(val startChar: Char, val endChar: Char, val charsCountInRow: Int) {
-            Bold('\'', '\'', 3),
+            BoldItalic('\'', '\'', 2),
             Link('[', ']', 2),
             Template('{', '}', 2),
             Heading('=', '=', 2)
@@ -93,8 +104,8 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
             while (index < count) {
 
                 when {
-                    charArrayToParse.isStartOfContent(ContentType.Bold, index) -> {
-                        index = parseAndAddBoldText(parts, charArrayToParse, index)
+                    charArrayToParse.isStartOfContent(ContentType.BoldItalic, index) -> {
+                        index = parseAndAddBoldItalicText(parts, charArrayToParse, index)
                     }
                     charArrayToParse.isStartOfContent(ContentType.Link, index) -> {
                         index = parseAndAddLink(parts, charArrayToParse, index)
@@ -170,13 +181,37 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
 
         // ----- Жирный текст -----
 
-        fun parseAndAddBoldText(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
-            val endPosition = charArrayToParse.getContentLength(ContentType.Bold, startPosition + ContentType.Bold.charsCountInRow)
-            val text = parseText(charArrayToParse, startPosition + ContentType.Bold.charsCountInRow, endPosition)
-            if (text.trim().isNotEmpty()) {
-                parts.add(PageTextBold(text.trim()))
+        fun parseAndAddBoldItalicText(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
+
+
+            // по умолчанию это курсив, проверяем другие вохможности
+
+            var type = BoldItalicType.italic
+
+            if (charArrayToParse.isStartOfContent(ContentType.BoldItalic, startPosition - BoldItalicType.italic.countOfBorderChars + BoldItalicType.bold.countOfBorderChars )) {
+                type = BoldItalicType.bold
+                if (charArrayToParse.isStartOfContent(ContentType.BoldItalic, startPosition - BoldItalicType.italic.countOfBorderChars + BoldItalicType.boldItalic.countOfBorderChars)) {
+                    type = BoldItalicType.boldItalic
+                }
             }
-            return endPosition + ContentType.Bold.charsCountInRow
+
+            var borderCharsCount = type.countOfBorderChars
+
+            val endPosition = charArrayToParse.getContentLength(ContentType.BoldItalic, startPosition + borderCharsCount)
+            val text = parseText(charArrayToParse, startPosition + borderCharsCount, endPosition).trim()
+
+            if (text.isNotEmpty()) {
+                // TODO доделать парсинг ссылок, по аналогии с заголовком
+                // если в заголовке есть ссылки - сохраняем в заголовке массив элементов из которых состоит этот заголовок
+//                val headingItems = getPageContent(text.trim().toCharArray())
+//                if (!headingItems.any { it is PageTextLink }) {
+//                    headingItems.clear()
+//                }
+//                parts.add(PageTextHeading(text.trim(), headingItems, HeadingLevel.getLevelFromBorderCharsCount(borderCharsCount)))
+                parts.add(PageTextBoldItalic(text, type))
+            }
+
+            return endPosition + borderCharsCount
         }
 
         // ----- Ссылка на другую страинцу -----
@@ -261,15 +296,15 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
             var borderCharsCount = ContentType.Heading.charsCountInRow + additionalBorderChar
 
             val endPosition = charArrayToParse.getContentLength(ContentType.Heading, startPosition + borderCharsCount)
-            val text = parseText(charArrayToParse, startPosition + borderCharsCount, endPosition)
+            val text = parseText(charArrayToParse, startPosition + borderCharsCount, endPosition).trim()
 
-            if (text.trim().isNotEmpty()) {
+            if (text.isNotEmpty()) {
                 // если в заголовке есть ссылки - сохраняем в заголовке массив элементов из которых состоит этот заголовок
-                val headingItems = getPageContent(text.trim().toCharArray())
+                val headingItems = getPageContent(text.toCharArray())
                 if (!headingItems.any { it is PageTextLink }) {
                     headingItems.clear()
                 }
-                parts.add(PageTextHeading(text.trim(), headingItems, HeadingLevel.getLevelTypeFromBorderCharsCount(borderCharsCount)))
+                parts.add(PageTextHeading(text, headingItems, HeadingLevel.getLevelFromBorderCharsCount(borderCharsCount)))
             }
 
             // вырезаем все переносы строк после заголовка
