@@ -44,7 +44,7 @@ interface PageTextViewInterface {
 
         for (textPart in textParts) {
             when (textPart) {
-                is PageTextNormal -> builder.append(textPart.text)
+                is PageTextPlain -> builder.append(textPart.text)
                 is PageTextLink -> builder.append(addTextWithLink(textPart, listener))
                 is PageTextBoldItalic -> builder.append(addBoldItalic(textPart.text, textPart.type))
             }
@@ -58,9 +58,9 @@ interface PageTextViewInterface {
     fun addBoldItalic(text: String, type: BoldItalicType): CharSequence {
         val span : StyleSpan
         when (type){
-            BoldItalicType.bold -> span = StyleSpan(Typeface.BOLD)
-            BoldItalicType.italic -> span = StyleSpan(Typeface.ITALIC)
-            BoldItalicType.boldItalic -> span = StyleSpan(Typeface.BOLD_ITALIC)
+            BoldItalicType.Bold -> span = StyleSpan(Typeface.BOLD)
+            BoldItalicType.Italic -> span = StyleSpan(Typeface.ITALIC)
+            BoldItalicType.BoldItalic -> span = StyleSpan(Typeface.BOLD_ITALIC)
         }
 
 //        val boldSpan: StyleSpan = StyleSpan(Typeface.BOLD)

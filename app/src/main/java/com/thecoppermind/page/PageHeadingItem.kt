@@ -58,8 +58,8 @@ class PageHeadingView(parent: ViewGroup, val listener: OnTextItemClickListener) 
 
     override fun setHeadingLevelText(level: HeadingLevel) {
         when (level) {
-            HeadingLevel.h2 -> textView.setTextAppearance(itemView.context, R.style.Text_Medium_Black_Size_20)
-            HeadingLevel.h3 -> textView.setTextAppearance(itemView.context, R.style.Text_Medium_Black_Size_18)
+            HeadingLevel.H2 -> textView.setTextAppearance(itemView.context, R.style.Text_Medium_Black_Size_20)
+            HeadingLevel.H3 -> textView.setTextAppearance(itemView.context, R.style.Text_Medium_Black_Size_18)
             else -> textView.setTextAppearance(itemView.context, R.style.Text_Medium_Black_Size_16)
         }
     }

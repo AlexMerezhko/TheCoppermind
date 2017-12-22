@@ -2,70 +2,48 @@
 
 package com.thecoppermind.tests.contentParsing
 
-import com.thecoppermind.Robots.content
-import com.thecoppermind.Robots.generator
 import com.thecoppermind.page.HeadingLevel
 import com.thecoppermind.page.PageClassDeserializer.Companion.ContentType.Heading
 import com.thecoppermind.page.PageClassDeserializer.Companion.ContentType.Link
 import com.thecoppermind.page.PageTextHeading
 import com.thecoppermind.page.PageTextLink
-import com.thecoppermind.page.PageTextNormal
+import com.thecoppermind.page.PageTextPlain
+import com.thecoppermind.robots.generate
+import com.thecoppermind.robots.parse
 import com.thecoppermind.utils.getIdForLink
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.Assert.assertTrue
 
 class HeadingTests {
 
     @Test
-    fun `check generated data`() {
-        generator {
-            val headingText = exampleForContentType(Heading)
-            assertTrue("==$headingText==" == exampleForContentTypeWithBorders(Heading))
-            assertTrue(PageTextHeading(headingText) == exampleForParsedContentType(Heading))
+    fun `only heading`() {
 
-            content {
-                text(exampleForContentTypeWithBorders(Heading))
-                match(exampleForParsedContentType(Heading))
-            }
+        val headingText = "This is Heading"
+
+        parse("==$headingText==") {
+            match(PageTextHeading(headingText))
         }
-    }
 
-    @Test
-    fun `no heading`() {
-        generator {
-            content {
-                text(generateDataForAllTypesExceptOne(PageTextHeading::class))
-                notContains<PageTextHeading>()
+        for (bordersCount in 2..6) {
+            var borders = ""
+            for (borderPosition in 0 until bordersCount) {
+                borders += "="
+            }
+            parse("$borders$headingText$borders") {
+                match(PageTextHeading(headingText, level = HeadingLevel.getLevelFromBorderCharsCount(bordersCount)))
             }
         }
     }
 
     @Test
     fun `empty heading`() {
-        generator {
-            content {
-                text(wrapWithContentTypeBorders(Heading, " "))
+        generate {
+            parse(wrappedText(Heading, " ")) {
                 matchResultEmpty()
             }
-            content {
-                text(wrapWithContentTypeBorders(Heading, "  "))
+            parse(wrappedText(Heading, "  ")) {
                 matchResultEmpty()
-            }
-        }
-    }
-
-    @Test
-    fun `one heading`() {
-        val baseText = "This is Heading"
-        for (bordersCount in 2..6) {
-            var borders = ""
-            for (borderPosition in 0 until bordersCount) {
-                borders += "="
-            }
-            content {
-                text("$borders$baseText$borders")
-                match(PageTextHeading(text = baseText, level = HeadingLevel.getLevelFromBorderCharsCount(bordersCount)))
             }
         }
     }
@@ -76,11 +54,11 @@ class HeadingTests {
             assertEquals(
                     HeadingLevel.getLevelFromBorderCharsCount(bordersCount),
                     when (bordersCount) {
-                        2 -> HeadingLevel.h2
-                        3 -> HeadingLevel.h3
-                        4 -> HeadingLevel.h4
-                        5 -> HeadingLevel.h5
-                        6 -> HeadingLevel.h6
+                        2 -> HeadingLevel.H2
+                        3 -> HeadingLevel.H3
+                        4 -> HeadingLevel.H4
+                        5 -> HeadingLevel.H5
+                        6 -> HeadingLevel.H6
                         else -> TODO("Test failed")
                     }
             )
@@ -89,103 +67,76 @@ class HeadingTests {
 
     @Test
     fun `two heading in a row`() {
-        generator {
-            content {
-                text(exampleForContentTypeWithBorders(Heading) + exampleForContentTypeWithBorders(Heading))
-                match(exampleForParsedContentType(Heading), exampleForParsedContentType(Heading))
+        generate {
+            parse(wrappedText(Heading) + wrappedText(Heading)) {
+                match(parsedText(Heading), parsedText(Heading))
             }
         }
     }
 
     @Test
     fun `removing white spaces from heading`() {
-        val baseText = "This is heading with white spaces"
-        val expectedResult = PageTextHeading(baseText)
 
-        var allTexts = ""
-        for (i in 0..2) {
-            var spaces: String = " "
-            for (j in 0..i) spaces += " "
+        generate {
+            val baseText = textForType(Heading)
+            val expectedResult = parsedText(Heading)
 
-            var text = "==$spaces$baseText=="
-            content {
-                text(text)
-                match(expectedResult)
+            var allTexts = ""
+            for (i in 0..2) {
+                var spaces = " "
+                for (j in 0..i) spaces += " "
+
+                var text = "==$spaces$baseText=="
+                parse(text) {
+                    match(expectedResult)
+                }
+                allTexts += text
+
+                text = "==$baseText$spaces=="
+                parse(text) {
+                    match(expectedResult)
+                }
+                allTexts += text
+
+                text = "==$spaces$baseText$spaces=="
+                parse(text) {
+                    match(expectedResult)
+                }
+                allTexts += text
             }
-            allTexts += text
-
-            text = "==$baseText$spaces=="
-            content {
-                text(text)
-                match(expectedResult)
+            parse(allTexts) {
+                match(expectedResult, expectedResult, expectedResult, expectedResult, expectedResult, expectedResult, expectedResult, expectedResult, expectedResult)
             }
-            allTexts += text
-
-            text = "==$spaces$baseText$spaces=="
-            content {
-                text(text)
-                match(expectedResult)
-            }
-            allTexts += text
-        }
-        content {
-            text(allTexts)
-            match(expectedResult, expectedResult, expectedResult, expectedResult, expectedResult, expectedResult, expectedResult, expectedResult, expectedResult)
         }
     }
 
     @Test
     fun `removing new lines after heading`() {
-        generator {
-            val baseText = exampleForContentTypeWithBorders(Heading) + '\n'
-            val expectedResult = exampleForParsedContentType(Heading)
-            content {
-                text(baseText)
-                match(expectedResult)
+        generate {
+            parse(wrappedText(Heading) + '\n') {
+                match(parsedText(Heading))
             }
-        }
 
-        generator {
-            val baseText = exampleForContentTypeWithBorders(Heading) + '\n' + '\n' + '\n'
-            val expectedResult = exampleForParsedContentType(Heading)
-            content {
-                text(baseText)
-                match(expectedResult)
+            parse(wrappedText(Heading) + '\n' + '\n' + '\n') {
+                match(parsedText(Heading))
             }
-        }
 
-        generator {
-            val baseText = exampleForContentTypeWithBorders(Heading) + '\n' + exampleNormalText()
-            val expectedResultHeading = exampleForParsedContentType(Heading)
-            val expectedResultNormalText = exampleParsedNormalText()
-            content {
-                text(baseText)
-                match(expectedResultHeading, expectedResultNormalText)
+            parse(wrappedText(Heading) + '\n' + wrappedPlainText()) {
+                match(parsedText(Heading), parsedPlaintText())
             }
         }
     }
 
     @Test
-    fun `heading with link`() {
-        content {
-            val items = listOf(PageTextNormal("This is heading"), PageTextLink("with link", "with link".getIdForLink()))
-            text("==This is heading[[with link]]==")
-            match(PageTextHeading("This is heading[[with link]]", items))
-        }
-    }
-
-    @Test
-    fun `heading with link and spaces`() {
-        content {
-            val items = listOf(PageTextNormal("This is heading"), PageTextLink("with link", "with link".getIdForLink()))
-            text("== This is heading[[with link]] ==")
-            match(PageTextHeading("This is heading[[with link]]", items))
-        }
-        generator {
-            content {
-                val items = listOf(exampleParsedNormalText(), exampleForParsedContentType(Link))
-                val headingText = exampleNormalText() + exampleForContentTypeWithBorders(Link)
-                text(wrapWithContentTypeBorders(Heading, " $headingText "))
+    fun `heading with link (and spaces)`() {
+        generate {
+            val items = listOf(parsedPlaintText(), parsedText(Link))
+            val headingText = wrappedPlainText() + wrappedText(Link)
+            parse(wrappedText(Heading, headingText)) {
+                match(PageTextHeading(headingText, items))
+            }
+            val space = " "
+            parse(wrappedText(Heading, "$space$headingText$space")) {
                 match(PageTextHeading(headingText, items))
             }
         }
@@ -193,49 +144,66 @@ class HeadingTests {
 
     @Test
     fun `heading with link and postfix`() {
-
-        val firstText = "This is heading "
+        val beforeLinkText = "This is heading "
         val linkText = "with link"
         val postfix = "and"
         val afterPostfix = " postfix"
 
-        generator {
-            content {
-                val items = listOf(PageTextNormal(firstText), PageTextLink(linkText + postfix, linkText.getIdForLink()), PageTextNormal(afterPostfix))
-                val headingText = firstText + wrapWithContentTypeBorders(Link, linkText) + postfix + afterPostfix
-                text(wrapWithContentTypeBorders(Heading, headingText))
+        generate {
+            val headingText = beforeLinkText + wrappedText(Link, linkText) + postfix + afterPostfix
+            val items = listOf(PageTextPlain(beforeLinkText), PageTextLink(linkText + postfix, linkText.getIdForLink()), PageTextPlain(afterPostfix))
+
+            parse(wrappedText(Heading, headingText)) {
+                match(PageTextHeading(headingText, items))
+            }
+        }
+
+        // same, but less readable
+        generate {
+            val headingText = plainText() + wrappedText(Link) + postfix + afterPostfix
+            val items = listOf(parsedPlaintText(), PageTextLink(textForType(Link) + postfix, textForType(Link).getIdForLink()), PageTextPlain(afterPostfix))
+
+            parse(wrappedText(Heading, headingText)) {
                 match(PageTextHeading(headingText, items))
             }
         }
     }
 
-
     @Test
     fun `heading with two links`() {
-        generator {
-            content {
-                val items = listOf(exampleParsedNormalText(), exampleForParsedContentType(Link), exampleForParsedContentType(Link))
-                val headingText = exampleNormalText() + exampleForContentTypeWithBorders(Link) + exampleForContentTypeWithBorders(Link)
-                text(wrapWithContentTypeBorders(Heading, headingText))
+
+        val space = " "
+
+        generate {
+            val items = listOf(parsedPlaintText(), parsedText(Link), parsedText(Link))
+            val headingText = wrappedPlainText() + wrappedText(Link) + wrappedText(Link)
+            parse(wrappedText(Heading, headingText)) {
                 match(PageTextHeading(headingText, items))
             }
-            content {
-                val items = listOf(exampleForParsedContentType(Link), exampleForParsedContentType(Link))
-                val headingText = exampleForContentTypeWithBorders(Link) + exampleForContentTypeWithBorders(Link)
-                text(wrapWithContentTypeBorders(Heading, headingText))
-                match(PageTextHeading(headingText, items))
-            }
-        }
-        content {
-            val items = listOf(PageTextNormal("This is heading"), PageTextLink("with link", "with link".getIdForLink()), PageTextNormal(" This is heading"))
-            text("==This is heading[[with link]] This is heading==")
-            match(PageTextHeading("This is heading[[with link]] This is heading", items))
         }
 
-        content {
-            val items = listOf(PageTextLink("with link", "with link".getIdForLink()), PageTextNormal(" This is heading"), PageTextLink("with link", "with link".getIdForLink()))
-            text("==[[with link]] This is heading[[with link]]==")
-            match(PageTextHeading("[[with link]] This is heading[[with link]]", items))
+        generate {
+            val items = listOf(parsedPlaintText(), parsedText(Link), parsedPlaintText(space + plainText()))
+            val headingText = wrappedPlainText() + wrappedText(Link) + wrappedPlainText(space + plainText())
+            parse(wrappedText(Heading, headingText)) {
+                match(PageTextHeading(headingText, items))
+            }
+        }
+
+        generate {
+            val items = listOf(parsedText(Link), parsedPlaintText(space + plainText()), parsedText(Link))
+            val headingText = wrappedText(Link) + wrappedPlainText(space + plainText()) + wrappedText(Link)
+            parse(wrappedText(Heading, headingText)) {
+                match(PageTextHeading(headingText, items))
+            }
+        }
+
+        generate {
+            val items = listOf(parsedText(Link), parsedText(Link))
+            val headingText = wrappedText(Link) + wrappedText(Link)
+            parse(wrappedText(Heading, headingText)) {
+                match(PageTextHeading(headingText, items))
+            }
         }
     }
 }

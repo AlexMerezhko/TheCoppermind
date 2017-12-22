@@ -1,58 +1,56 @@
-package com.thecoppermind.Robots
+package com.thecoppermind.robots
 
 import com.google.gson.GsonBuilder
 import com.thecoppermind.page.PageClassDeserializer
 import com.thecoppermind.page.PageData
 import com.thecoppermind.page.PageTextInterface
 import org.junit.Assert.assertTrue
-import kotlin.properties.Delegates
 
-
-fun page(func: PageRobot.() -> Unit) = PageRobot().apply(func)
+fun verifyPage(page: PageData, func: PageRobot.() -> Unit) = PageRobot(page).apply(func)
+//fun verifyPage(id: Int, title: String, text: String, func: PageRobot.() -> Unit) = PageRobot(id, title, text).apply(func)
 
 class PageRobot {
-    var page by Delegates.notNull<PageData>()
 
-    var id by Delegates.notNull<Int>()
-    var title by Delegates.notNull<String>()
+    val page: PageData
 
-    fun fromGeneratedResponse(id: Int, title: String, text: String) {
-        this.id = id
-        this.title = title
-        fromResponse(DataGeneratorForTests().jsonResponse(id, title, text)) // TODO
+    constructor(page: PageData) {
+        this.page = page
     }
 
-    fun fromResponse(response: String) {
-        val gsonBuilder = GsonBuilder()
-        gsonBuilder.registerTypeAdapter(PageData::class.java, PageClassDeserializer());
-        val gson = gsonBuilder.create()
-        page = gson.fromJson(response, PageData::class.java)
+//    constructor(id: Int, title: String, text: String) {
+//        val gsonBuilder = GsonBuilder()
+//        gsonBuilder.registerTypeAdapter(PageData::class.java, PageClassDeserializer()).create()
+//        val gson = gsonBuilder.create()
+//        val response = DataGenerator().jsonResponse(id, title, text);
+//        page = gson.fromJson(response, PageData::class.java)
+//    }
+
+    fun matchAll(id: Int, title: String, vararg texts: PageTextInterface) {
+        matchHeaders(id, title)
+        matchContent(ArrayList<PageTextInterface>(texts.asList()))
     }
 
-    fun match(vararg texts: PageTextInterface) {
-        matchHeader(id, title)
-        matchContent(texts)
-    }
-
-    fun match(id: Int = this.id, title: String = this.title, vararg texts: PageTextInterface) {
-        matchHeader(id, title)
-        matchContent(texts)
-    }
-
-    fun matchHeader(id: Int, title: String) {
-        headers { match(page, id, title) }
-    }
-
-    fun matchContent(texts: Array<out PageTextInterface>) {
-        content { match(page.parts, texts) }
-    }
-}
-
-fun headers(func: PageHeadersRobot.() -> Unit) = PageHeadersRobot().apply(func)
-class PageHeadersRobot {
-
-    fun match(page: PageData, id: Int, title: String) {
+    fun matchHeaders(id: Int, title: String){
         assertTrue(page.id == id)
         assertTrue(page.title == title)
     }
+
+//    fun matchContent(vararg texts: PageTextInterface) {
+//        matchContent(ArrayList<PageTextInterface>(texts.asList()))
+//    }
+
+    fun matchContent(texts: ArrayList<PageTextInterface>) {
+        parse(page.parts) {
+            match(texts)
+        }
+    }
 }
+
+//fun verifyHeaders(func: PageHeadersRobot.() -> Unit) = PageHeadersRobot().apply(func)
+//class PageHeadersRobot {
+//
+//    fun match(page: PageData, id: Int, title: String) {
+//        assertTrue(page.id == id)
+//        assertTrue(page.title == title)
+//    }
+//}

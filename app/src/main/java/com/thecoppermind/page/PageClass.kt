@@ -13,19 +13,24 @@ interface PageTextInterface {
 
 // TODO FYI https://en.wikipedia.org/wiki/Help:Wiki_markup
 
-data class PageTextNormal(override val text: String) : PageTextInterface
-//data class PageTextNormal(val rawText: String) : PageTextInterface {
-//    override val text: String
-//        get() = rawText.getTextWithEnumeration()
-//}
+data class PageTextPlain(override val text: String) : PageTextInterface
 
-// known templates
 // TODO https://en.wikipedia.org/wiki/Template:Fake_heading
 
-// TODO тесты для boldItalic
-data class PageTextHeading(override val text: String, val parts: List<PageTextInterface> = ArrayList(), val level: HeadingLevel = HeadingLevel.h2) : PageTextInterface
 
-data class PageTextBoldItalic(override val text: String, val type : BoldItalicType) : PageTextInterface
+//    как насчёт ссылки к хеадингу без смены id?
+
+// TODO есть ещё и префиксы ! a[[b]] gives ab.
+// TODO есть ещё курсивная ссылка! ''[[a]]''b gives ab.
+
+// TODO
+// To link to a section or subsection in the same page, you can use:
+// [[#Section name|displayed text]]/
+
+
+data class PageTextHeading(override val text: String, val parts: List<PageTextInterface> = ArrayList(), val level: HeadingLevel = HeadingLevel.H2) : PageTextInterface
+
+data class PageTextBoldItalic(override val text: String, val type: BoldItalicType) : PageTextInterface
 data class PageTextLink(override val text: String, val pageId: String, val heading: String = "") : PageTextInterface
 data class PageTextTemplate(override val text: String) : PageTextInterface
 
@@ -34,22 +39,22 @@ enum class HeadingLevel(val countOfBorderChars: Int) {
     // по документации это стиль заголовка страницы и он не должен встречаться в контенте
 //    h1(1), // = heading h1 =
 
-    h2(2), // == heading h2 ==
-    h3(3), // === heading h3 ===
-    h4(4), // ==== heading h4 ====
-    h5(5), // ===== heading h5 =====
-    h6(6); // ====== heading h6 ======
+    H2(2), // == heading h2 ==
+    H3(3), // === heading h3 ===
+    H4(4), // ==== heading h4 ====
+    H5(5), // ===== heading h5 =====
+    H6(6); // ====== heading h6 ======
 
     companion object {
-        fun getLevelFromBorderCharsCount(count: Int) = HeadingLevel.values().firstOrNull { it.countOfBorderChars == count } ?: HeadingLevel.h6
+        fun getLevelFromBorderCharsCount(count: Int) = HeadingLevel.values().firstOrNull { it.countOfBorderChars == count } ?: HeadingLevel.H6
     }
 }
 
 enum class BoldItalicType(val countOfBorderChars: Int) {
 
-    italic(2), // ''italic''
-    bold(3), // '''bold'''
-    boldItalic(5); // '''''bold italics'''''
+    Italic(2), // ''italic''
+    Bold(3), // '''bold'''
+    BoldItalic(5); // '''''bold italics'''''
 
     companion object {
         fun getTypeFromBorderCharsCount(count: Int) = BoldItalicType.values().first { it.countOfBorderChars == count }
@@ -67,7 +72,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
         return getPageData(rootObject)
     }
 
-    fun getPageData(rootObject: JsonObject): PageData {
+    private fun getPageData(rootObject: JsonObject): PageData {
 
 //            val startTime = System.currentTimeMillis()
         val title = rootObject.get("title").asString
@@ -91,15 +96,14 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
             Heading('=', '=', 2)
         }
 
-        val notNormalTextVariants = ContentType.values()
-//        val notNormalTextVariants = listOf(ContentType.Bold, ContentType.Link, ContentType.Template, ContentType.Heading)
+        val notPlainTextVariants = ContentType.values()
 
         fun getPageContent(charArrayToParse: CharArray): ArrayList<PageTextInterface> {
 
             val count: Int = charArrayToParse.size
-            var index: Int = 0
+            var index = 0
 
-            var parts: ArrayList<PageTextInterface> = ArrayList()
+            val parts: ArrayList<PageTextInterface> = ArrayList()
 
             while (index < count) {
 
@@ -125,9 +129,9 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
             return parts
         }
 
-        fun CharArray.isStartOfContent(contentType: ContentType, index: Int) = this.isBorderOfContent(index, contentType.charsCountInRow, contentType.startChar)
-        fun CharArray.isEndOfContent(contentType: ContentType, index: Int) = this.isBorderOfContent(index, contentType.charsCountInRow, contentType.endChar)
-        fun CharArray.isBorderOfContent(index: Int, charsCountInRow: Int, borderCharToCompare: Char): Boolean {
+        private fun CharArray.isStartOfContent(contentType: ContentType, index: Int) = this.isBorderOfContent(index, contentType.charsCountInRow, contentType.startChar)
+        private fun CharArray.isEndOfContent(contentType: ContentType, index: Int) = this.isBorderOfContent(index, contentType.charsCountInRow, contentType.endChar)
+        private fun CharArray.isBorderOfContent(index: Int, charsCountInRow: Int, borderCharToCompare: Char): Boolean {
             var checkedCharsCount = 0
             do {
                 if (index >= size - checkedCharsCount || this[index + checkedCharsCount] != borderCharToCompare) {
@@ -138,7 +142,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
             return true
         }
 
-        fun CharArray.getContentLength(contentType: ContentType, startPosition: Int): Int {
+        private fun CharArray.getContentLength(contentType: ContentType, startPosition: Int): Int {
             var endPosition = startPosition
             while (!isEndOfContent(contentType, endPosition)) {
                 endPosition++
@@ -147,7 +151,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
         }
 
 
-        fun CharArray.getContentLengthWithAllDeepsContent(contentType: ContentType, startPosition: Int): Int {
+        private fun CharArray.getContentLengthWithAllDeepsContent(contentType: ContentType, startPosition: Int): Int {
             var deepContentCounter = 1
             var endPosition = startPosition
 
@@ -165,7 +169,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
             return endPosition
         }
 
-        fun CharArray.getLengthBeforeContents(contentTypes: Array<ContentType>, startPosition: Int): Int {
+        private fun CharArray.getLengthBeforeContents(contentTypes: Array<ContentType>, startPosition: Int): Int {
             var endPosition = startPosition
             // если концом страницы будет текст (а не любой из возможных "контентов", то этот цикл не завершится без условия endPosition < size )
             while (endPosition < size && !contentTypes.any { isStartOfContent(it, endPosition) }) {
@@ -175,27 +179,27 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
         }
 
 
-        fun parseText(charArrayToParse: CharArray, startPosition: Int, endPosition: Int): String {
+        private fun parseText(charArrayToParse: CharArray, startPosition: Int, endPosition: Int): String {
             return String(charArrayToParse.copyOfRange(startPosition, endPosition))
         }
 
         // ----- Жирный текст -----
 
-        fun parseAndAddBoldItalicText(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
-
+        private fun parseAndAddBoldItalicText(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
 
             // по умолчанию это курсив, проверяем другие вохможности
 
-            var type = BoldItalicType.italic
+            // TODO посчитать количество апострофов и на основе getTypeFromBorderCharsCount выбрать тип, а не этот харкод (
+            var type = BoldItalicType.Italic
 
-            if (charArrayToParse.isStartOfContent(ContentType.BoldItalic, startPosition - BoldItalicType.italic.countOfBorderChars + BoldItalicType.bold.countOfBorderChars )) {
-                type = BoldItalicType.bold
-                if (charArrayToParse.isStartOfContent(ContentType.BoldItalic, startPosition - BoldItalicType.italic.countOfBorderChars + BoldItalicType.boldItalic.countOfBorderChars)) {
-                    type = BoldItalicType.boldItalic
+            if (charArrayToParse.isStartOfContent(ContentType.BoldItalic, startPosition - BoldItalicType.Italic.countOfBorderChars + BoldItalicType.Bold.countOfBorderChars)) {
+                type = BoldItalicType.Bold
+                if (charArrayToParse.isStartOfContent(ContentType.BoldItalic, startPosition - BoldItalicType.Italic.countOfBorderChars + BoldItalicType.BoldItalic.countOfBorderChars)) {
+                    type = BoldItalicType.BoldItalic
                 }
             }
 
-            var borderCharsCount = type.countOfBorderChars
+            val borderCharsCount = type.countOfBorderChars
 
             val endPosition = charArrayToParse.getContentLength(ContentType.BoldItalic, startPosition + borderCharsCount)
             val text = parseText(charArrayToParse, startPosition + borderCharsCount, endPosition).trim()
@@ -216,39 +220,40 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
 
         // ----- Ссылка на другую страинцу -----
 
-        fun parseAndAddLink(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
+        private fun parseAndAddLink(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
 
             val endPosition = charArrayToParse.getContentLength(ContentType.Link, startPosition + ContentType.Link.charsCountInRow)
             val postfixSize = getLinkPostfixSize(charArrayToParse, endPosition + ContentType.Link.charsCountInRow)
 
-            val rawLink = parseText(charArrayToParse, startPosition + ContentType.Link.charsCountInRow, endPosition);
+            val rawLink = parseText(charArrayToParse, startPosition + ContentType.Link.charsCountInRow, endPosition)
 
             val linkId: String
             val linkText: String
 
-            if (rawLink.isNotEmpty()) {
+            if (rawLink.trim().isNotEmpty()) {
+
                 if (rawLink.contains("|")) {
                     val heading: String
                     if (rawLink.contains("#")) {
-                        linkId = rawLink.substringBefore("|").substringBefore("#").getIdForLink()
-                        heading = rawLink.substringBefore("|").substringAfter("#")
+                        linkId = rawLink.substringBefore("#").getIdForLink()
+                        heading = rawLink.substringAfter("#").substringBefore("|")
                     } else {
                         linkId = rawLink.substringBefore("|").getIdForLink()
                         heading = ""
                     }
 
-                    if (postfixSize > 0) {
-                        linkText = rawLink.substringAfterLast("|") + parseText(charArrayToParse, endPosition + ContentType.Link.charsCountInRow, endPosition + ContentType.Link.charsCountInRow + postfixSize)
+                    linkText = if (postfixSize > 0) {
+                        rawLink.substringAfterLast("|") + parseText(charArrayToParse, endPosition + ContentType.Link.charsCountInRow, endPosition + ContentType.Link.charsCountInRow + postfixSize)
                     } else {
-                        linkText = rawLink.substringAfterLast("|")
+                        rawLink.substringAfterLast("|")
                     }
                     parts.add(PageTextLink(linkText, linkId, heading))
                 } else {
                     linkId = rawLink.getIdForLink()
-                    if (postfixSize > 0) {
-                        linkText = rawLink + parseText(charArrayToParse, endPosition + ContentType.Link.charsCountInRow, endPosition + ContentType.Link.charsCountInRow + postfixSize)
+                    linkText = if (postfixSize > 0) {
+                        rawLink + parseText(charArrayToParse, endPosition + ContentType.Link.charsCountInRow, endPosition + ContentType.Link.charsCountInRow + postfixSize)
                     } else {
-                        linkText = rawLink.substringAfterLast("|")
+                        rawLink
                     }
                     parts.add(PageTextLink(linkText, linkId))
                 }
@@ -257,7 +262,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
             return endPosition + ContentType.Link.charsCountInRow + postfixSize
         }
 
-        fun getLinkPostfixSize(charArrayToParse: CharArray, endPosition: Int): Int {
+        private fun getLinkPostfixSize(charArrayToParse: CharArray, endPosition: Int): Int {
             var postfixSize = 0
             while (endPosition + postfixSize < charArrayToParse.size
                     && charArrayToParse[endPosition + postfixSize] != ' '
@@ -266,7 +271,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
                     && charArrayToParse[endPosition + postfixSize] != '.'
                     && charArrayToParse[endPosition + postfixSize] != '*'
                     && charArrayToParse[endPosition + postfixSize] != '#'
-                    && !notNormalTextVariants.any { charArrayToParse.isStartOfContent(it, endPosition + postfixSize) }
+                    && !notPlainTextVariants.any { charArrayToParse.isStartOfContent(it, endPosition + postfixSize) }
                     ) {
                 postfixSize++
             }
@@ -275,7 +280,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
 
         // ----- Шаблоны -----
 
-        fun parseAndAddTemplate(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
+        private fun parseAndAddTemplate(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
             val endPosition = charArrayToParse.getContentLengthWithAllDeepsContent(ContentType.Template, startPosition + ContentType.Template.charsCountInRow)
             val text = parseText(charArrayToParse, startPosition + ContentType.Template.charsCountInRow, endPosition)
             if (text.trim().isNotEmpty()) {
@@ -286,14 +291,14 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
 
         // ----- Заголовок-----
 
-        fun parseAndAddHeading(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
+        private fun parseAndAddHeading(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
 
             var additionalBorderChar = 0
             while (charArrayToParse.isStartOfContent(ContentType.Heading, startPosition + additionalBorderChar + 1)) {
                 additionalBorderChar++
             }
 
-            var borderCharsCount = ContentType.Heading.charsCountInRow + additionalBorderChar
+            val borderCharsCount = ContentType.Heading.charsCountInRow + additionalBorderChar
 
             val endPosition = charArrayToParse.getContentLength(ContentType.Heading, startPosition + borderCharsCount)
             val text = parseText(charArrayToParse, startPosition + borderCharsCount, endPosition).trim()
@@ -319,9 +324,9 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
 
         // ----- Обычный текст -----
 
-        fun parseAndAddText(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
+        private fun parseAndAddText(parts: ArrayList<PageTextInterface>, charArrayToParse: CharArray, startPosition: Int): Int {
 
-            val endPosition = charArrayToParse.getLengthBeforeContents(notNormalTextVariants, startPosition)
+            val endPosition = charArrayToParse.getLengthBeforeContents(notPlainTextVariants, startPosition)
 
             var endBeforeNewLine = endPosition
             if (endPosition < charArrayToParse.size && charArrayToParse.isStartOfContent(ContentType.Heading, endPosition)) {
@@ -334,7 +339,7 @@ class PageClassDeserializer : JsonDeserializer<PageData> {
             val text = parseText(charArrayToParse, startPosition, endBeforeNewLine)
             if (text.isNotEmpty()) {
                 // форматирование перечислений (возможно потребуется доработка)
-                parts.add(PageTextNormal(text.getTextWithEnumeration()))
+                parts.add(PageTextPlain(text.getTextWithEnumeration()))
             }
             return endPosition
         }

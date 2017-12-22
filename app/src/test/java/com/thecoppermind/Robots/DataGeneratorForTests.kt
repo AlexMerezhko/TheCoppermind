@@ -1,15 +1,18 @@
-package com.thecoppermind.Robots
+package com.thecoppermind.robots
 
 import com.thecoppermind.page.*
 import com.thecoppermind.utils.getIdForLink
 import kotlin.reflect.KClass
 
+@Deprecated("")
 fun generator(func: DataGeneratorForTests.() -> Unit) = DataGeneratorForTests().apply(func)
+
+@Deprecated("")
 class DataGeneratorForTests {
 
     // ----- все типы текстовох блоково------
 
-    fun allTypesOfItems() = listOf(PageTextNormal::class, PageTextBoldItalic::class, PageTextHeading::class, PageTextTemplate::class, PageTextHeading::class)
+    fun allTypesOfItems() = listOf(PageTextPlain::class, PageTextBoldItalic::class, PageTextHeading::class, PageTextTemplate::class, PageTextHeading::class)
 
     // ----- основной формат ответа ------
 
@@ -29,7 +32,7 @@ class DataGeneratorForTests {
     fun generateDataForAllTypesExceptOne(clazz: KClass<out PageTextInterface>?): String {
         var result = ""
 
-        if (clazz != PageTextNormal::class) result += exampleNormalText()
+        if (clazz != PageTextPlain::class) result += exampleNormalText()
         if (clazz != PageTextHeading::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Heading)
         if (clazz != PageTextLink::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Link)
         if (clazz != PageTextTemplate::class) result += exampleForContentTypeWithBorders(PageClassDeserializer.Companion.ContentType.Template)
@@ -56,10 +59,10 @@ class DataGeneratorForTests {
 
     // ----- создание текстовых элементов - обработанных данных ------
 
-    fun exampleParsedNormalText() = PageTextNormal(exampleNormalText())
+    fun exampleParsedNormalText() = PageTextPlain(exampleNormalText())
     fun exampleForParsedContentType(type: PageClassDeserializer.Companion.ContentType): PageTextInterface {
         when (type) {
-            PageClassDeserializer.Companion.ContentType.BoldItalic -> return PageTextBoldItalic(exampleForContentType(type))
+            PageClassDeserializer.Companion.ContentType.BoldItalic -> return PageTextBoldItalic(exampleForContentType(type), BoldItalicType.Bold)
             PageClassDeserializer.Companion.ContentType.Link -> {
                 val text = exampleForContentType(type)
                 return PageTextLink(text, text.getIdForLink())

@@ -2,143 +2,129 @@
 
 package com.thecoppermind.tests.contentParsing
 
-import com.thecoppermind.Robots.content
 import com.thecoppermind.page.PageClassDeserializer
+import com.thecoppermind.page.PageClassDeserializer.Companion.ContentType.Link
 import com.thecoppermind.page.PageTextLink
-import com.thecoppermind.Robots.generator
-import com.thecoppermind.page.PageTextNormal
+import com.thecoppermind.page.PageTextPlain
+import com.thecoppermind.robots.generate
+import com.thecoppermind.robots.parse
 import com.thecoppermind.utils.getIdForLink
 import com.thecoppermind.utils.getTextWithEnumeration
-import org.junit.Assert
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import com.thecoppermind.page.PageClassDeserializer.Companion.ContentType.Link
 
 class LinkTests {
 
     @Test
-    fun `check generated data`() {
-        generator {
-            val linkText = exampleForContentType(Link)
-            Assert.assertTrue("[[$linkText]]" == exampleForContentTypeWithBorders(Link))
-            Assert.assertTrue(PageTextLink(linkText, linkText.getIdForLink()) == exampleForParsedContentType(Link))
+    fun `one link`() {
 
-            content {
-                text(exampleForContentTypeWithBorders(Link))
-                match(exampleForParsedContentType(Link))
-            }
-        }
-    }
+        val linkText = "This is Link"
+        val linkId = "This_is_Link"
+//        val linkHeading = "to the heading"
 
-    @Test
-    fun `no links`() {
-        generator {
-            content {
-                text(generateDataForAllTypesExceptOne(PageTextLink::class))
-                notContains(PageTextLink::class)
-            }
+        parse("[[$linkText]]") {
+            match(PageTextLink(linkText, linkId))
         }
     }
 
     @Test
     fun `empty link`() {
-        generator {
-            content {
-                text(wrapWithContentTypeBorders(Link, ""))
+        generate {
+            parse(wrappedText(Link, " ")) {
+                matchResultEmpty()
+            }
+            parse(wrappedText(Link, "  ")) {
                 matchResultEmpty()
             }
         }
     }
 
     @Test
-    fun `one link`() {
-        content {
-            text("[[This is link]]")
-            match(PageTextLink("This is link", "This_is_link"))
+    fun `two links in a row`() {
+        generate {
+            parse(wrappedText(Link) + wrappedText(Link)) {
+                match(parsedText(Link), parsedText(Link))
+            }
         }
     }
 
     @Test
-    fun `two links in a row`() {
-        content {
-            text("[[This is first link]][[This is second link]]")
-            match(PageTextLink("This is first link", "This_is_first_link"), PageTextLink("This is second link", "This_is_second_link"))
-        }
+    fun `create linkId from text`() {
+        assertTrue("id".getIdForLink() == "id")
+        assertTrue("more than one word".getIdForLink() == "more_than_one_word")
+        assertTrue("few_underlines in text".getIdForLink() == "few_underlines_in_text")
+        assertTrue("all_underlines_in_text".getIdForLink() == "all_underlines_in_text")
+    }
+
+    @Test
+    fun `removing spaces in created link id`() {
+        assertTrue(" spaces ".getIdForLink() == "spaces")
+        assertTrue("  spaces  ".getIdForLink() == "spaces")
+        assertTrue(" spaces before and after words ".getIdForLink() == "spaces_before_and_after_words")
+        assertTrue(" spaces_before_and_after_words_with_underlines ".getIdForLink() == "spaces_before_and_after_words_with_underlines")
     }
 
     @Test
     fun `link with different text to show`() {
-        content {
-            val pageId = "Real page id"
-            val linkText = "link to show"
-
-            text("[[$pageId|$linkText]]")
-            match(PageTextLink(linkText, pageId.getIdForLink()))
+        val pageId = "Real page id"
+        val linkText = "link to show"
+        generate {
+            parse(wrappedText(Link, "$pageId|$linkText")) {
+                match(PageTextLink(linkText, pageId.getIdForLink()))
+            }
         }
     }
 
     @Test
-    fun `link with scroll to content`() {
-        content {
-            val pageId = "Real page id"
-            val heading = "Heading to scroll"
-            val linkText = "link to show"
-
-            text("[[$pageId#$heading|$linkText]]")
-            match(PageTextLink(linkText, pageId.getIdForLink(), heading))
+    fun `link with scroll to heading`() {
+        val pageId = "Real page id"
+        val heading = "Heading to scroll"
+        val linkText = "link to show"
+        generate {
+            parse(wrappedText(Link, "$pageId#$heading|$linkText")) {
+                match(PageTextLink(linkText, pageId.getIdForLink(), heading))
+            }
+            parse(wrappedText(Link, "$pageId#|$linkText")) {
+                match(PageTextLink(linkText, pageId.getIdForLink()))
+            }
         }
-    }
-
-    @Test
-    fun `create Id for Link from Text`() {
-        assertTrue("This is link".getIdForLink() == "This_is_link")
-        assertTrue("ThisIsLink".getIdForLink() == "ThisIsLink")
-        assertTrue(" This is link ".getIdForLink() == "This_is_link")
     }
 
     @Test
     fun `with postfix`() {
-        val baseText = "This is link"
-        val linkText = baseText
-        val linkId = linkText.getIdForLink()
-        val postfix: String = "postfix"
-        var notPostfix: String = "afterPostfix"
+        generate {
+            val linkId = textForType(Link).getIdForLink()
+            val postfix = "postfix"
+            val notPostfix = plainText()
 
-        // текст без разделителей до окончания строки
-        content {
-            text("[[$baseText]]$postfix")
-            match(PageTextLink(linkText + postfix, linkId))
-        }
+            // текст без разделителей до окончания строки
+            parse(wrappedText(Link) + postfix) {
+                match(PageTextLink(textForType(Link) + postfix, linkId))
+            }
 
-        // разделители
-        for (divider in listOf(' ', ',', '.')) {
-            content {
-                text("[[$baseText]]$postfix$divider$notPostfix")
-                match(PageTextLink(linkText + postfix, linkId), PageTextNormal(divider + notPostfix))
+            // разделители
+            for (divider in listOf(' ', ',', '.')) {
+                parse(wrappedText(Link) + postfix + divider + notPostfix) {
+                    match(PageTextLink(textForType(Link) + postfix, linkId), PageTextPlain(divider + notPostfix))
+                }
             }
-        }
 
-        // начала перечислений
-        for (divider in listOf('*', '#')) {
-            content {
-                text("[[$baseText]]$postfix$divider$notPostfix")
-                match(PageTextLink(linkText + postfix, linkId), PageTextNormal((divider + notPostfix).getTextWithEnumeration()))
+            // начала перечислений
+            for (divider in listOf('*', '#')) {
+                parse(wrappedText(Link) + postfix + divider + notPostfix) {
+                    match(PageTextLink(textForType(Link) + postfix, linkId), PageTextPlain((divider + notPostfix).getTextWithEnumeration()))
+                }
             }
-        }
-        // перенос строки
-        for (divider in listOf('\n')) {
-            content {
-                text("[[$baseText]]$postfix$divider$notPostfix")
-                match(PageTextLink(linkText + postfix, linkId), PageTextNormal(divider + notPostfix))
+            // перенос строки
+            for (divider in listOf('\n')) {
+                parse(wrappedText(Link) + postfix + divider + notPostfix) {
+                    match(PageTextLink(textForType(Link) + postfix, linkId), PageTextPlain(divider + notPostfix))
+                }
             }
-        }
-        // другие типы текста
-        for (type in PageClassDeserializer.Companion.notNormalTextVariants) {
-            generator {
-                notPostfix = exampleForContentTypeWithBorders((type))
-                content {
-                    text("[[$baseText]]$postfix" + exampleForContentTypeWithBorders((type)))
-                    match(PageTextLink(linkText + postfix, linkId), exampleForParsedContentType(type))
+            // другие типы текста
+            for (type in PageClassDeserializer.Companion.notPlainTextVariants) {
+                parse(wrappedText(Link) + postfix + wrappedText(type)) {
+                    match(PageTextLink(textForType(Link) + postfix, linkId), parsedText(type))
                 }
             }
         }

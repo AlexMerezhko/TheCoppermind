@@ -1,32 +1,37 @@
-package com.thecoppermind.Robots
+package com.thecoppermind.robots
 
 import com.thecoppermind.page.PageClassDeserializer
 import com.thecoppermind.page.PageTextInterface
 import org.junit.Assert.assertTrue
-import kotlin.properties.Delegates
 
-fun content(func: PageContentRobot.() -> Unit) = PageContentRobot().apply(func)
-class PageContentRobot {
+fun parse(parts: ArrayList<PageTextInterface>, func: PageContentRobot.() -> Unit) = PageContentRobot(parts).apply(func)
+fun parse(rawText: String, func: PageContentRobot.() -> Unit) = PageContentRobot(rawText).apply(func)
 
-    var parts by Delegates.notNull<ArrayList<PageTextInterface>>()
+class PageContentRobot(val parts : ArrayList<PageTextInterface>) {
 
-    fun text(rawText: String) {
-        parts = PageClassDeserializer.getPageContent(rawText.toCharArray())
-    }
+    constructor(rawText: String) : this(PageClassDeserializer.getPageContent(rawText.toCharArray()))
+
+//    constructor(rawText: String) : this(val parts1 : ArrayList<PageTextInterface>){
+//        parts1 = PageClassDeserializer.getPageContent(rawText.toCharArray())
+//    }
+
+//    constructor(rawText: String) : this(){
+//        PageClassDeserializer.getPageContent(rawText.toCharArray())
+//    }
 
     fun matchResultEmpty() {
-        assertTrue(parts.size == 0)
+        match()
     }
 
     fun match(vararg texts: PageTextInterface) {
-        match(parts, texts)
+        assertTrue(parts.size == texts.size && parts.indices.none { parts[it] != texts[it] })
     }
-//
-//    fun match(texts : Array<out PageTextInterface>) {
-//        match(parts, texts)
+
+//    fun match(vararg texts: Array<out PageTextInterface>) {
+//        assertTrue(parts.size == texts.size && parts.indices.none { parts[it] != texts[it] })
 //    }
 
-    fun match(parts: ArrayList<PageTextInterface>, texts: Array<out PageTextInterface>) {
+    fun match(texts: ArrayList<PageTextInterface>) {
         assertTrue(parts.size == texts.size && parts.indices.none { parts[it] != texts[it] })
     }
 
@@ -38,5 +43,3 @@ class PageContentRobot {
         assertTrue(parts.indices.none { parts[it] is T })
     }
 }
-
-
